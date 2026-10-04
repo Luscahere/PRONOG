@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#007a4f">
+<title>Ma journée</title>
+<style>
+:root{
+  --green:#007a4f; --green2:#006440; --mint:#d9f4eb; --blue:#32add7;
+  --red:#ec4141; --orange:#e4ab27; --purple:#8a63d2; --yellow:#d9a916;
+  --text:#292b2d; --muted:#767676; --line:#e4e7e6; --bg:#f2f4f3; --card:#fff;
+  --shadow:0 9px 28px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:var(--bg)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+.app{max-width:860px;margin:auto;min-height:100vh;background:#fff;box-shadow:0 0 30px rgba(0,0,0,.07)}
+
+.topbar{height:132px;position:relative;overflow:hidden;background:var(--green);color:#fff;border-radius:0 0 40px 40px}
+.topbar:before{content:"";position:absolute;left:-30px;top:-70px;width:245px;height:265px;background:var(--mint);transform:rotate(-14deg);border-radius:56px}
+.profile{position:absolute;z-index:2;left:25px;top:18px;display:flex;align-items:center;gap:14px;max-width:65%}
+.avatar{width:68px;height:68px;border-radius:50%;border:2px solid rgba(255,255,255,.9);display:grid;place-items:center;background:rgba(255,255,255,.18);font-size:21px;font-weight:800}
+.name-wrap{min-width:0}.name{font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sub{font-size:13px;opacity:.88;margin-top:5px}
+.title{position:absolute;left:25px;bottom:25px;z-index:2;font-size:28px;font-weight:800}
+.top-actions{position:absolute;right:18px;top:39px;z-index:4;display:flex;gap:8px}
+.icon-btn{border:0;background:rgba(255,255,255,.08);color:#fff;width:44px;height:44px;border-radius:50%;display:grid;place-items:center}
+.icon-btn:hover{background:rgba(255,255,255,.17)}
+.home{width:26px;height:21px;position:relative}.home:before{content:"";position:absolute;left:2px;top:7px;width:22px;height:14px;background:#fff}.home:after{content:"";position:absolute;left:0;top:0;border-left:13px solid transparent;border-right:13px solid transparent;border-bottom:11px solid #fff}.home span{position:absolute;z-index:2;left:10px;bottom:0;width:6px;height:8px;background:var(--green)}
+.menu{width:28px;height:24px;position:relative}.menu i{position:absolute;right:0;height:4px;background:#fff;border-radius:4px}.menu i:nth-child(1){top:0;width:21px}.menu i:nth-child(2){top:9px;width:28px}.menu i:nth-child(3){top:18px;width:18px}
+
+.content{padding:18px 18px 36px}
+.date-row{display:grid;grid-template-columns:55px 1fr 55px;align-items:center}
+.arrow{border:0;background:none;color:var(--green);font-size:45px;line-height:1}
+.date{text-align:center;font-size:27px;font-weight:800}
+.today{border:0;background:#eaf7f2;color:var(--green2);border-radius:18px;padding:7px 13px;font-size:13px;font-weight:800;display:block;margin:0 auto 15px}
+
+.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:5px 0 16px}
+.stat{background:#f7f8f8;border:1px solid var(--line);border-radius:15px;padding:12px}
+.stat b{display:block;font-size:21px}.stat span{font-size:12px;color:var(--muted)}
+
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search{flex:1;min-width:180px;position:relative}.search input{width:100%;padding:11px 12px 11px 36px;border:1px solid #d5d8d7;border-radius:12px;outline:none}.search input:focus{border-color:var(--green)}
+.search:before{content:"⌕";position:absolute;left:12px;top:7px;font-size:22px;color:#777}
+.filter{padding:11px;border:1px solid #d5d8d7;border-radius:12px;background:#fff}
+
+.timeline{display:flex;flex-direction:column;gap:5px}
+.no-tasks{padding:36px 20px;border:2px dashed #d2d5d4;border-radius:20px;text-align:center;color:var(--muted);background:#fbfbfb}
+.no-tasks strong{display:block;color:var(--text);font-size:19px;margin-bottom:6px}
+
+.task{display:grid;grid-template-columns:86px 1fr;min-height:108px}
+.task-time{text-align:right;padding:17px 12px 0 0;font-size:18px;white-space:nowrap}
+.track{border-left:9px solid #d7d7d7;border-radius:8px;padding-left:14px;position:relative}
+.task.priority-high .track{border-left-color:var(--red)}
+.task.priority-medium .track{border-left-color:var(--orange)}
+.task.priority-low .track{border-left-color:var(--blue)}
+.task.done .track{border-left-color:#9db4aa}
+.task.done .task-card{opacity:.62}
+.task-card{padding:11px 0 14px;position:relative}
+.task-header{display:flex;gap:9px;align-items:flex-start}
+.check{margin-top:2px;width:22px;height:22px;border-radius:50%;border:2px solid #b7bcba;background:#fff;flex:0 0 auto}
+.done .check{background:var(--green);border-color:var(--green);color:#fff;display:grid;place-items:center;font-size:13px}
+.task-main{min-width:0;flex:1}.task-title{font-size:19px;font-weight:800;line-height:1.2}.done .task-title{text-decoration:line-through}
+.meta{margin-top:6px;color:#6f7271;font-size:14px}
+.notes{margin:8px 0 0 31px;color:#545756;font-size:14px;white-space:pre-line}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 0 31px}
+.tag{padding:4px 7px;border-radius:8px;font-size:11px;font-weight:800;background:#eef1f0}
+.tag.red{background:#ffe9e9;color:#b02b2b}.tag.orange{background:#fff3d7;color:#805d09}.tag.green{background:#e6f6ef;color:#00643f}.tag.blue{background:#e6f5fb;color:#156884}.tag.purple{background:#eee8fb;color:#6240a3}
+.task-actions{position:absolute;right:0;top:5px;display:flex;gap:5px;opacity:0}
+.task:hover .task-actions,.task:focus-within .task-actions{opacity:1}
+.mini{width:33px;height:33px;border:1px solid #ddd;background:#fff;border-radius:9px}.mini.danger{color:#bc3030}
+.all-day .task-time{font-size:14px;color:#777;padding-top:20px}.all-day .track{border-left-color:var(--purple)}
+.all-day .task-title{font-size:18px}
+
+.add-bar{display:flex;gap:8px;justify-content:center;margin:20px 0 0;flex-wrap:wrap}
+.primary{border:0;background:var(--green);color:#fff;border-radius:13px;padding:13px 18px;font-weight:800;box-shadow:0 5px 14px rgba(0,122,79,.18)}
+.primary:hover{background:var(--green2)}
+.secondary{border:0;background:#ecefee;color:#333;border-radius:13px;padding:13px 16px;font-weight:800}
+
+.progress-wrap{margin:17px 0 4px}
+.progress-head{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:6px}
+.progress{height:9px;background:#e6e9e8;border-radius:9px;overflow:hidden}.progress > div{height:100%;background:var(--green);width:0;transition:.25s}
+
+.fab{position:fixed;right:max(18px,calc((100vw - 860px)/2 + 18px));bottom:18px;width:67px;height:67px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:31px;box-shadow:0 7px 18px rgba(0,0,0,.2);z-index:15}
+
+.auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at top left,#d9f4eb 0,transparent 35%),var(--bg)}
+.auth-card{width:min(470px,100%);background:#fff;border-radius:25px;overflow:hidden;box-shadow:var(--shadow)}
+.auth-head{background:var(--green);color:#fff;padding:28px}.auth-head h1{margin:0;font-size:29px}.auth-head p{margin:7px 0 0;opacity:.88}
+.auth-body{padding:23px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#edf0ef;border-radius:12px;padding:5px;margin-bottom:18px}.tab{border:0;background:transparent;padding:10px;border-radius:9px;font-weight:800;color:#555}.tab.active{background:#fff;color:var(--green);box-shadow:0 2px 7px rgba(0,0,0,.07)}
+.group{margin-bottom:13px}.group label{display:block;font-size:13px;font-weight:800;color:#555;margin-bottom:6px}.group input,.group select,.group textarea{width:100%;padding:12px 13px;border:1px solid #d1d4d3;border-radius:12px;outline:none;background:#fff}.group input:focus,.group select:focus,.group textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,122,79,.1)}
+.message{min-height:20px;font-size:13px;color:#b12b2b;font-weight:700;margin:2px 0 10px}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none;align-items:center;justify-content:center;padding:18px}.overlay.open{display:flex}
+.modal{width:min(600px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:23px;box-shadow:0 16px 50px rgba(0,0,0,.25)}
+.modal h2{margin:0 0 18px;font-size:24px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{grid-column:1/-1}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px;flex-wrap:wrap}
+.danger-btn{border:0;background:#ffecec;color:#ac2525;border-radius:12px;padding:12px 16px;font-weight:800}
+
+.menu-panel{position:fixed;inset:0;z-index:45;display:none}.menu-panel.open{display:block}.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.35)}.side{position:absolute;right:0;top:0;height:100%;width:min(365px,92vw);background:#fff;padding:22px;box-shadow:-12px 0 30px rgba(0,0,0,.15);overflow:auto}.side h3{margin:0 0 18px;font-size:23px}
+.menu-item{display:block;width:100%;border:0;background:#f4f5f5;border-radius:13px;padding:14px;text-align:left;font-weight:800;margin-bottom:10px}.menu-item:hover{background:#eaedec}.logout{color:#b02828;background:#fff0f0}
+
+.toast{position:fixed;z-index:70;left:50%;bottom:20px;transform:translate(-50%,15px);opacity:0;background:#222;color:#fff;border-radius:11px;padding:11px 15px;font-size:14px;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:650px){
+  .topbar{height:126px}.profile{left:16px;max-width:67%;gap:10px}.avatar{width:58px;height:58px;font-size:17px}.name{font-size:15px}.sub{font-size:11px}.title{left:16px;bottom:24px;font-size:22px}.top-actions{right:10px;top:41px}.icon-btn{width:40px;height:40px}
+  .content{padding:15px 10px 30px}.date{font-size:23px}.task{grid-template-columns:72px 1fr}.task-time{font-size:16px;padding-right:9px}.track{padding-left:11px}.task-title{font-size:17px}.task-actions{opacity:1;position:relative;right:auto;top:auto;margin:8px 0 0;justify-content:flex-start}.notes,.tags{margin-left:31px}.summary{grid-template-columns:1fr 1fr 1fr;gap:6px}.stat{padding:10px 8px}.stat b{font-size:18px}
+  .form-grid{grid-template-columns:1fr}.full{grid-column:auto}
+}
+@media print{
+  body{background:#fff}.app{max-width:none;box-shadow:none}.top-actions,.toolbar,.today,.add-bar,.fab,.task-actions{display:none!important}.topbar{border-radius:0}
+}
+</style>
+</head>
+<body>
+
+<section id="authScreen" class="auth">
+  <div class="auth-card">
+    <div class="auth-head">
+      <h1>Ma journée</h1>
+      <p>Organise tout ce que tu as à faire, sans planning prérempli.</p>
+    </div>
+    <div class="auth-body">
+      <div class="tabs">
+        <button id="loginTab" class="tab active" onclick="switchAuth('login')">Se connecter</button>
+        <button id="registerTab" class="tab" onclick="switchAuth('register')">Créer un compte</button>
+      </div>
+
+      <form id="loginForm" onsubmit="login(event)">
+        <div class="group"><label>E-mail ou identifiant</label><input id="loginId" required autocomplete="username" placeholder="ex. lucas"></div>
+        <div class="group"><label>Mot de passe</label><input id="loginPassword" type="password" required autocomplete="current-password"></div>
+        <div id="loginMessage" class="message"></div>
+        <button class="primary" style="width:100%" type="submit">Se connecter</button>
+      </form>
+
+      <form id="registerForm" class="hidden" onsubmit="register(event)">
+        <div class="group"><label>Nom et prénom</label><input id="regName" required autocomplete="name" placeholder="ex. Lucas Dupont"></div>
+        <div class="group"><label>Classe / activité (facultatif)</label><input id="regClass" placeholder="ex. Terminale"></div>
+        <div class="group"><label>E-mail</label><input id="regEmail" type="email" required autocomplete="email"></div>
+        <div class="group"><label>Identifiant</label><input id="regUsername" required autocomplete="username"></div>
+        <div class="group"><label>Mot de passe</label><input id="regPassword" type="password" minlength="6" required autocomplete="new-password"></div>
+        <div class="group"><label>Confirmer le mot de passe</label><input id="regPassword2" type="password" minlength="6" required autocomplete="new-password"></div>
+        <div id="registerMessage" class="message"></div>
+        <button class="primary" style="width:100%" type="submit">Créer mon compte</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="profile">
+      <div id="avatar" class="avatar">?</div>
+      <div class="name-wrap"><div id="studentName" class="name">Utilisateur</div><div id="studentClass" class="sub">Mon espace</div></div>
+    </div>
+    <div class="title">Ma journée</div>
+    <div class="top-actions">
+      <button class="icon-btn" title="Aujourd'hui" onclick="goToday()"><div class="home"><span></span></div></button>
+      <button class="icon-btn" title="Menu" onclick="toggleMenu(true)"><div class="menu"><i></i><i></i><i></i></div></button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="date-row">
+      <button class="arrow" onclick="changeDay(-1)">‹</button>
+      <div id="dateLabel" class="date"></div>
+      <button class="arrow" onclick="changeDay(1)">›</button>
+    </div>
+    <button id="todayButton" class="today hidden" onclick="goToday()">Revenir à aujourd'hui</button>
+
+    <div class="summary">
+      <div class="stat"><b id="totalCount">0</b><span>Tâches</span></div>
+      <div class="stat"><b id="doneCount">0</b><span>Terminées</span></div>
+      <div class="stat"><b id="remainingCount">0</b><span>À faire</span></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search"><input id="searchInput" placeholder="Rechercher une tâche..." oninput="render()"></div>
+      <select id="filterSelect" class="filter" onchange="render()">
+        <option value="all">Toutes</option>
+        <option value="todo">À faire</option>
+        <option value="done">Terminées</option>
+        <option value="high">Priorité haute</option>
+        <option value="all-day">Toute la journée</option>
+      </select>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-head"><span>Progression de la journée</span><b id="progressText">0%</b></div>
+      <div class="progress"><div id="progressBar"></div></div>
+    </div>
+
+    <section id="timeline" class="timeline"></section>
+
+    <div class="add-bar">
+      <button class="primary" onclick="openTaskModal()">＋ Ajouter une tâche</button>
+      <button class="secondary" onclick="openQuickModal()">⚡ Ajout rapide</button>
+    </div>
+  </main>
+
+  <button class="fab" title="Ajouter une tâche" onclick="openTaskModal()">＋</button>
+</div>
+
+<div id="menuPanel" class="menu-panel">
+  <div class="backdrop" onclick="toggleMenu(false)"></div>
+  <aside class="side">
+    <h3>Menu</h3>
+    <button class="menu-item" onclick="toggleMenu(false);openProfile()">⚙️ Mon profil</button>
+    <button class="menu-item" onclick="toggleMenu(false);goToday()">📅 Aujourd'hui</button>
+    <button class="menu-item" onclick="toggleMenu(false);openTaskModal(null,true)">🔁 Tâche récurrente</button>
+    <button class="menu-item" onclick="toggleMenu(false);openClearModal()">🧹 Effacer la journée</button>
+    <button class="menu-item" onclick="toggleMenu(false);window.print()">🖨️ Imprimer / PDF</button>
+    <button class="menu-item" onclick="toggleMenu(false);toggleTheme()">🌙 Mode sombre</button>
+    <button class="menu-item logout" onclick="toggleMenu(false);logout()">↪ Se déconnecter</button>
+  </aside>
+</div>
+
+<div id="taskModal" class="overlay">
+  <div class="modal">
+    <h2 id="taskModalTitle">Ajouter une tâche</h2>
+    <form onsubmit="saveTask(event)">
+      <div class="form-grid">
+        <div class="group"><label>Heure de début</label><input id="taskStart" type="time" value="08:00"></div>
+        <div class="group"><label>Heure de fin</label><input id="taskEnd" type="time" value="09:00"></div>
+        <div class="group"><label>Titre</label><input id="taskTitle" required placeholder="ex. Faire les courses"></div>
+        <div class="group"><label>Catégorie</label>
+          <select id="taskCategory">
+            <option value="Perso">Personnel</option><option value="Maison">Maison</option><option value="Travail">Travail</option>
+            <option value="Études">Études</option><option value="Sport">Sport</option><option value="Rendez-vous">Rendez-vous</option><option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="group"><label>Priorité</label>
+          <select id="taskPriority"><option value="low">Basse</option><option value="medium" selected>Moyenne</option><option value="high">Haute</option></select>
+        </div>
+        <div class="group"><label>Lieu (facultatif)</label><input id="taskLocation" placeholder="ex. Maison, salle de sport..."></div>
+        <div class="group full"><label>Notes</label><textarea id="taskNotes" rows="3" placeholder="Détails, liste de choses à prendre..."></textarea></div>
+        <div class="group"><label>☐ Toute la journée</label><select id="taskAllDay"><option value="no">Non</option><option value="yes">Oui</option></select></div>
+        <div class="group"><label>Répéter</label>
+          <select id="taskRepeat"><option value="none">Pas de répétition</option><option value="daily">Tous les jours</option><option value="weekdays">Lun. à ven.</option><option value="weekly">Chaque semaine</option></select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" onclick="close('taskModal')">Annuler</button>
+        <button id="taskDeleteBtn" type="button" class="danger-btn hidden" onclick="deleteEditingTask()">Supprimer</button>
+        <button class="primary" type="submit" id="taskSaveBtn">Ajouter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="quickModal" class="overlay">
+  <div class="modal">
+    <h2>Ajout rapide</h2>
+    <div class="group"><label>Décris ce que tu dois faire</label><input id="quickText" placeholder="ex. 18h30 appeler maman"></div>
+    <p style="color:#777;font-size:13px">Format pratique : <b>heure + tâche</b>. Tu peux aussi écrire seulement la tâche.</p>
+    <div class="modal-actions"><button class="secondary" onclick="close('quickModal')">Annuler</button><button class="primary" onclick="saveQuick()">Ajouter</button></div>
+  </div>
+</div>
+
+<div id="profileModal" class="overlay">
+  <div class="modal">
+    <h2>Mon profil</h2>
+    <div class="group"><label>Nom et prénom</label><input id="profileName"></div>
+    <div class="group"><label>Classe / activité</label><input id="profileClass"></div>
+    <div class="modal-actions"><button class="secondary" onclick="close('profileModal')">Annuler</button><button class="primary" onclick="saveProfile()">Enregistrer</button></div>
+  </div>
+</div>
+
+<div id="clearModal" class="overlay">
+  <div class="modal">
+    <h2>Effacer la journée ?</h2>
+    <p id="clearText"></p>
+    <div class="modal-actions"><button class="secondary" onclick="close('clearModal')">Annuler</button><button class="danger-btn" onclick="clearDay()">Effacer</button></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const ACCOUNTS_KEY="ma_journee_accounts_v5", SESSION_KEY="ma_journee_session_v5", THEME_KEY="ma_journee_theme_v1";
+let currentUser=null, selectedDate=new Date(), editingId=null;
+
+const DAYS=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+const MONTHS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+
+function accounts(){try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||"{}")}catch{return {}}}
+function saveAccounts(a){localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a))}
+function key(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function fmt(d){return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`}
+function todayMid(){const d=new Date();d.setHours(0,0,0,0);return d}
+function same(a,b){return a.toDateString()===b.toDateString()}
+function initials(s){const p=(s||"").trim().split(/\s+/);return p.length>1?(p[0][0]+p[1][0]).toUpperCase():((p[0]||"?").slice(0,2).toUpperCase())}
+function norm(s){return String(s||"").trim().toLowerCase()}
+
+async function hashPassword(password){
+  if(window.crypto?.subtle){
+    const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(password));
+    return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");
+  }
+  return btoa(unescape(encodeURIComponent(password)));
+}
+
+function switchAuth(mode){
+  const login=mode==="login";
+  loginTab.classList.toggle("active",login);registerTab.classList.toggle("active",!login);
+  loginForm.classList.toggle("hidden",!login);registerForm.classList.toggle("hidden",login);
+  loginMessage.textContent="";registerMessage.textContent="";
+}
+async function register(e){
+  e.preventDefault();
+  const name=regName.value.trim(), cl=regClass.value.trim(), email=norm(regEmail.value), user=norm(regUsername.value), p=regPassword.value;
+  registerMessage.textContent="";
+  if(p!==regPassword2.value){registerMessage.textContent="Les mots de passe ne correspondent pas.";return}
+  const db=accounts();
+  if(db[user]){registerMessage.textContent="Cet identifiant existe déjà.";return}
+  if(Object.values(db).some(a=>norm(a.email)===email)){registerMessage.textContent="Cet e-mail est déjà utilisé.";return}
+  db[user]={id:user,username:user,email,passwordHash:await hashPassword(p),profile:{name,className:cl},tasks:{}};
+  saveAccounts(db);localStorage.setItem(SESSION_KEY,user);currentUser=db[user];selectedDate=new Date();showApp();toast("Compte créé.")
+}
+async function login(e){
+  e.preventDefault();loginMessage.textContent="";
+  const id=norm(loginId.value), pass=await hashPassword(loginPassword.value), db=accounts();
+  const a=Object.values(db).find(x=>norm(x.username)===id||norm(x.email)===id);
+  if(!a){loginMessage.textContent="Compte introuvable.";return}
+  if(a.passwordHash!==pass){loginMessage.textContent="Mot de passe incorrect.";return}
+  currentUser=a;localStorage.setItem(SESSION_KEY,a.id);selectedDate=new Date();showApp();toast("Connexion réussie.")
+}
+function logout(){
+  localStorage.removeItem(SESSION_KEY);currentUser=null;app.classList.add("hidden");authScreen.classList.remove("hidden");switchAuth("login")
+}
+function restore(){
+  const id=localStorage.getItem(SESSION_KEY),db=accounts();
+  if(id&&db[id]){currentUser=db[id];selectedDate=new Date();showApp()}else authScreen.classList.remove("hidden")
+}
+function saveUser(){const db=accounts();db[currentUser.id]=currentUser;saveAccounts(db)}
+function showApp(){
+  authScreen.classList.add("hidden");app.classList.remove("hidden");
+  studentName.textContent=currentUser.profile.name||currentUser.username;
+  studentClass.textContent=currentUser.profile.className||"Mon espace personnel";
+  avatar.textContent=initials(currentUser.profile.name||currentUser.username);
+  render();
+}
+
+function courses(){
+  return Array.isArray(currentUser.tasks[key(selectedDate)])?currentUser.tasks[key(selectedDate)]:[];
+}
+
+function render(){
+  dateLabel.textContent=fmt(selectedDate);todayButton.classList.toggle("hidden",same(selectedDate,todayMid()));
+  let all=courses().slice().sort((a,b)=>{
+    if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return (a.start||"99:99").localeCompare(b.start||"99:99")
+  });
+  const q=norm(searchInput.value), f=filterSelect.value;
+  let list=all.filter(t=>{
+    const hay=norm([t.title,t.category,t.location,t.notes].join(" "));
+    if(q&&!hay.includes(q))return false;
+    if(f==="todo"&&t.done)return false;if(f==="done"&&!t.done)return false;if(f==="high"&&t.priority!=="high")return false;if(f==="all-day"&&!t.allDay)return false;
+    return true;
+  });
+
+  totalCount.textContent=all.length;doneCount.textContent=all.filter(t=>t.done).length;remainingCount.textContent=all.filter(t=>!t.done).length;
+  const pct=all.length?Math.round(all.filter(t=>t.done).length/all.length*100):0;
+  progressText.textContent=pct+"%";progressBar.style.width=pct+"%";
+
+  timeline.innerHTML="";
+  if(!list.length){timeline.innerHTML=`<div class="no-tasks"><strong>${all.length?"Aucune tâche ne correspond au filtre":"Aucune tâche pour cette journée"}</strong>${all.length?"Modifie le filtre ou la recherche.":"Ajoute ce que tu as à faire avec « Ajouter une tâche »."}</div>`;return}
+
+  list.forEach(t=>{
+    const el=document.createElement("div");el.className=`task priority-${t.priority} ${t.done?"done":""} ${t.allDay?"all-day":""}`;
+    const time=document.createElement("div");time.className="task-time";time.textContent=t.allDay?"Toute la\njournée":`${t.start}${t.end?" – "+t.end:""}`;
+    const track=document.createElement("div");track.className="track";const card=document.createElement("div");card.className="task-card";
+    const head=document.createElement("div");head.className="task-header";
+    const check=document.createElement("button");check.className="check";check.innerHTML=t.done?"✓":"";check.title=t.done?"Marquer à faire":"Marquer terminée";check.onclick=()=>toggleDone(t.id);
+    const main=document.createElement("div");main.className="task-main";
+    const title=document.createElement("div");title.className="task-title";title.textContent=t.title;main.appendChild(title);
+    const meta=[];if(t.category)meta.push(t.category);if(t.location)meta.push("📍 "+t.location);if(t.repeat&&t.repeat!=="none")meta.push("↻ "+repeatName(t.repeat));if(meta.length){const m=document.createElement("div");m.className="meta";m.textContent=meta.join(" · ");main.appendChild(m)}
+    head.appendChild(check);head.appendChild(main);card.appendChild(head);
+    if(t.notes){const n=document.createElement("div");n.className="notes";n.textContent=t.notes;card.appendChild(n)}
+    const tags=document.createElement("div");tags.className="tags";
+    const cat=document.createElement("span");cat.className=`tag ${catClass(t.category)}`;cat.textContent=t.category||"Autre";tags.appendChild(cat);
+    const pr=document.createElement("span");pr.className=`tag ${t.priority==="high"?"red":t.priority==="medium"?"orange":"blue"}`;pr.textContent=t.priority==="high"?"Priorité haute":t.priority==="medium"?"Priorité moyenne":"Priorité basse";tags.appendChild(pr);
+    card.appendChild(tags);
+    const acts=document.createElement("div");acts.className="task-actions";
+    const edit=document.createElement("button");edit.className="mini";edit.textContent="✏️";edit.title="Modifier";edit.onclick=()=>openTaskModal(t);
+    const del=document.createElement("button");del.className="mini danger";del.textContent="🗑️";del.title="Supprimer";del.onclick=()=>deleteTask(t.id);
+    acts.appendChild(edit);acts.appendChild(del);card.appendChild(acts);track.appendChild(card);el.appendChild(time);el.appendChild(track);timeline.appendChild(el);
+  });
+}
+
+function catClass(c){const x=norm(c);if(x.includes("travail"))return"red";if(x.includes("maison"))return"orange";if(x.includes("sport"))return"green";if(x.includes("études"))return"blue";if(x.includes("rendez"))return"purple";return""}
+function repeatName(x){return x==="daily"?"chaque jour":x==="weekdays"?"lun. à ven.":"chaque semaine"}
+function changeDay(n){selectedDate.setDate(selectedDate.getDate()+n);render()}
+function goToday(){selectedDate=new Date();render();toggleMenu(false)}
+
+function openTaskModal(t=null){
+  editingId=t?.id||null;
+  taskModalTitle.textContent=t?"Modifier une tâche":"Ajouter une tâche";
+  taskSaveBtn.textContent=t?"Enregistrer":"Ajouter";taskDeleteBtn.classList.toggle("hidden",!t);
+  taskStart.value=t?.start||"08:00";taskEnd.value=t?.end||"09:00";taskTitle.value=t?.title||"";
+  taskCategory.value=t?.category||"Perso";taskPriority.value=t?.priority||"medium";taskLocation.value=t?.location||"";
+  taskNotes.value=t?.notes||"";taskAllDay.value=t?.allDay?"yes":"no";taskRepeat.value=t?.repeat||"none";taskModal.classList.add("open");
+  setTimeout(()=>taskTitle.focus(),50)
+}
+
+function saveTask(e){
+  e.preventDefault();
+  const allDay=taskAllDay.value==="yes", start=taskStart.value,end=taskEnd.value;
+  if(!allDay && start && end && end<=start){toast("L'heure de fin doit être après le début.");return}
+  const t={id:editingId||Date.now().toString(),start:allDay?"":start,end:allDay?"":end,title:taskTitle.value.trim(),category:taskCategory.value,priority:taskPriority.value,location:taskLocation.value.trim(),notes:taskNotes.value.trim(),allDay,repeat:taskRepeat.value,done:editingId?(courses().find(x=>x.id===editingId)?.done||false):false};
+  const arr=courses();
+  if(editingId){const i=arr.findIndex(x=>x.id===editingId);if(i>=0)arr[i]=t}else arr.push(t);
+  currentUser.tasks[key(selectedDate)]=arr;applyRepeat(t,selectedDate);saveUser();close("taskModal");render();toast(editingId?"Tâche modifiée.":"Tâche ajoutée.");editingId=null
+}
+
+function applyRepeat(t,date){
+  if(!t.repeat||t.repeat==="none")return;
+  const dbDates=[];
+  if(t.repeat==="daily")for(let i=1;i<=60;i++)dbDates.push(new Date(date.getTime()+i*86400000));
+  if(t.repeat==="weekly")for(let i=1;i<=12;i++)dbDates.push(new Date(date.getTime()+i*7*86400000));
+  if(t.repeat==="weekdays")for(let i=1;i<=60;i++){const d=new Date(date.getTime()+i*86400000);if(d.getDay()>=1&&d.getDay()<=5)dbDates.push(d)}
+  for(const d of dbDates){
+    const k=key(d);const arr=Array.isArray(currentUser.tasks[k])?currentUser.tasks[k]:[];
+    if(!arr.some(x=>x.repeat===t.repeat&&x.title===t.title))arr.push({...t,id:`${t.id}-${k}`,done:false});currentUser.tasks[k]=arr
+  }
+}
+
+function toggleDone(id){const arr=courses();const t=arr.find(x=>x.id===id);if(t){t.done=!t.done;currentUser.tasks[key(selectedDate)]=arr;saveUser();render();toast(t.done?"Tâche terminée ✓":"Tâche remise à faire.")}}
+function deleteTask(id){currentUser.tasks[key(selectedDate)]=courses().filter(t=>t.id!==id);if(!currentUser.tasks[key(selectedDate)].length)delete currentUser.tasks[key(selectedDate)];saveUser();render();toast("Tâche supprimée.")}
+function deleteEditingTask(){if(editingId)deleteTask(editingId);close("taskModal");editingId=null}
+
+function openQuickModal(){quickModal.classList.add("open");quickText.focus()}
+function saveQuick(){
+  const text=quickText.value.trim();if(!text){toast("Écris une tâche.");return}
+  let start="",title=text,end="";
+  const m=text.match(/^(\\d{1,2}):(\\d{2})\\s+(.+)$/);
+  if(m){start=`${m[1].padStart(2,"0")}:${m[2]}`;title=m[3]}
+  const arr=courses();arr.push({id:Date.now().toString(),start,end,title,category:"Perso",priority:"medium",location:"",notes:"",allDay:!start,repeat:"none",done:false});
+  currentUser.tasks[key(selectedDate)]=arr;saveUser();quickText.value="";close("quickModal");render();toast("Tâche ajoutée.")
+}
+
+function openProfile(){profileName.value=currentUser.profile.name||"";profileClass.value=currentUser.profile.className||"";profileModal.classList.add("open")}
+function saveProfile(){const n=profileName.value.trim();if(!n){toast("Le nom est obligatoire.");return}currentUser.profile.name=n;currentUser.profile.className=profileClass.value.trim();saveUser();studentName.textContent=n;studentClass.textContent=currentUser.profile.className||"Mon espace personnel";avatar.textContent=initials(n);close("profileModal");toast("Profil mis à jour.")}
+function openClearModal(){clearText.textContent=`Tous les éléments enregistrés pour ${fmt(selectedDate)} seront supprimés.`;clearModal.classList.add("open")}
+function clearDay(){delete currentUser.tasks[key(selectedDate)];saveUser();close("clearModal");render();toast("Journée effacée.")}
+function close(id){document.getElementById(id).classList.remove("open")}
+function toggleMenu(x){menuPanel.classList.toggle("open",x)}
+
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+  const dark=document.body.classList.contains("dark");
+  localStorage.setItem(THEME_KEY,dark?"dark":"light");
+  if(dark){
+    document.documentElement.style.setProperty("--bg","#151918");
+    document.documentElement.style.setProperty("--card","#202524");
+    document.documentElement.style.setProperty("--text","#f3f5f4");
+    document.documentElement.style.setProperty("--muted","#a5aaa8");
+    document.documentElement.style.setProperty("--line","#3a403e");
+  }else location.reload();
+  toast(dark?"Mode sombre activé":"Mode clair activé");
+}
+(function(){if(localStorage.getItem(THEME_KEY)==="dark")toggleTheme()})()
+
+document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("open")}))
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".overlay.open").forEach(x=>x.classList.remove("open"));toggleMenu(false)}})
+
+// La date suit en permanence la date de l'appareil.
+let deviceDate=key(new Date());
+setInterval(()=>{const now=key(new Date());if(now!==deviceDate){deviceDate=now;selectedDate=new Date();if(currentUser)render()}},30000);
+
+restore();
+</script>
+</body>
+</html>
